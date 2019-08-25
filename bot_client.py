@@ -2,7 +2,7 @@
 #https://github.com/Rapptz/discord.py
 import discord
 import re
-import misc
+import random
 
 #diecordのclientを使用してbotを管理するクラスです
 #discord.pyのapiは下記リファレンスサイトを参照してください
@@ -37,9 +37,9 @@ class Client:
             return re.split('d', result)
         #nteamsパターンチェック
         def check_teams_pattern(str):
-            pattern = '/teams'
+            pattern = '/teams:'
             content = re.compile(pattern)
-            result = content.fullmatch(str)
+            result = re.match(content, str)
             if result is not None:
                 return True
             else:
@@ -74,7 +74,7 @@ class Client:
                 role_cnt = int(role[0])
                 dice_max = int(role[1])
                 for i in range(role_cnt):
-                    tmp = misc.randint(0, dice_max)
+                    tmp = random.randint(0, dice_max)
                     nums.append(tmp)
                     total += tmp
                 result = "ダイス："
@@ -86,48 +86,18 @@ class Client:
 
             #teams
             if check_teams_pattern(msg.content):
-                actives = []
-                blue = []
-                red = []
-                active_num = 0
-                for m in msg.guild.members:
-                    #if m.status == discord.Status.online and m.bot == False:
-                    if m.bot == False:
-                        actives.append(m)
-                        active_num += 1
-                        print(m.name)
-                
+                result = re.sub('/teams:', "", msg.content)
+                names = re.split(':', result)
+                random.shuffle(names)
                 rand_idx = []
-                for i in range(active_num):
-                    tmp = misc.randint(0, active_num - 1)
-                    is_set = True
-                    for j in rand_idx:
-                        if(j == tmp):
-                            i -= 1
-                            is_set = False
-                            break
-                    if is_set:
-                        rand_idx.append(tmp)
-
-                limit = int(float(active_num) / 2)
-                print(rand_idx)
-                print(limit)
-                idx = 0
-                for i in rand_idx:
-                    if idx >= limit:
-                        red.append(actives[i])
-                    else:
-                        blue.append(actives[i])
-                    idx += 1
-
+                active_num = len(names)
+                limit = int(float(active_num ) / 2)
                 result = "ブルー\n"
-                for b in blue:
-                    result += b.name + " "
+                for i in range(0, limit):
+                    result += names[i] + " "
                 result += "\nレッド\n"
-                for r in red:
-                    result += r.name + " "
-
-                print(result)
+                for i in range(limit, active_num):
+                    result += names[i] + " "
                 await msg.channel.send(result)
                 return
 
